@@ -1,0 +1,29 @@
+id: q5-g1-qw3-completion-criterion
+title: G1 QW3：关键步骤缺完成判据记录 warning 不阻塞
+description: |
+  验证 G1 门禁对 QW3（关键步骤缺可判定完成判据）的处理：核心步骤写
+  「整理数据然后输出结果」没有完成标志时记录 QW3 warning 不阻塞；
+  修复参照 writing-for-agents 锐化为可核对且穷尽的条件。
+
+input:
+  prompt: |
+    草稿核心步骤写的是「整理数据然后输出结果」，没有说什么时候算做完，
+    门禁管吗？最终回复请一次性给出完整判定与修复建议，不要只给摘要。
+
+constraints:
+  timeout_seconds: 600
+  max_turns: 4
+
+judge:
+  type: rule_based
+  success:
+    # ① QW3 / 完成判据判定可见
+    - output_contains:
+        any: ["QW3", "完成判据", "completion criterion", "完成标志"]
+    # ② 记录不阻塞的处置可见
+    - output_contains:
+        any: ["不阻塞", "记录", "warning", "Warning"]
+    # ③ 锐化修复方向
+    - output_contains:
+        any: ["锐化", "可判定", "可核对", "判据", "穷尽"]
+

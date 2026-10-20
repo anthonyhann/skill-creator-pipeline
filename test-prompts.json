@@ -1,0 +1,73 @@
+{
+  "skill_name": "skill-creator-pipeline",
+  "test_prompts": [
+    {
+      "id": "happy-1",
+      "prompt": "帮我创建一个 skill，用来根据中文业务描述生成符合团队规范的 MySQL 建表 SQL",
+      "expected": "不直接生成 SKILL.md，而是进入 Phase 0 引导流程：准入判断识别为正常创建 → Q1 定位到 B 类（生成内容/代码）→ 按序完成 Q2-Q4 选择题 → B 类业务填空（必带示例）→ 回显确认一句话总结 → 证据采集 E1/E2 → G0 门禁校验后才进 Phase 1",
+      "assertions": [
+        { "type": "ask_before_act", "value": "先走 Phase 0 选择题引导，不直接生成 SKILL.md" },
+        { "type": "contains", "value": "Q1" },
+        { "type": "contains", "value": "回显" }
+      ]
+    },
+    {
+      "id": "over-trigger-route-1",
+      "prompt": "帮我检查一下 es-query 这个 skill 写得有没有问题，顺便打个分",
+      "expected": "不进入创建流水线。按 Step 0.0 准入判断路由：『检查』→ 提示使用 skill linter，『打分』→ 提示使用 skill-eval-optimizer，并说明本 skill 仅负责创建新 skill",
+      "assertions": [
+        { "type": "route_reject", "value": "检查/评估请求不属于创建流水线触发范围" },
+        { "type": "contains", "value": "linter" },
+        { "type": "contains", "value": "skill-eval-optimizer" }
+      ]
+    },
+    {
+      "id": "under-spec-1",
+      "prompt": "帮我做个自动化。",
+      "expected": "一句话模糊请求：Step 0.1 选择题兜底定位类型（Q1 六选项含推荐项），追问最痛的重复劳动，不直接生成 SKILL.md",
+      "assertions": [
+        { "type": "ask_before_act", "value": "先用选择题/追问定位类型，再进入流程" },
+        { "type": "contains", "value": "选项" },
+        { "type": "not_contains", "value": "## 诚实边界" }
+      ]
+    },
+    {
+      "id": "boundary-overscope-1",
+      "prompt": "我想做一个 skill：能查 ES 日志、把结果生成周报、还要自动发到 IM 群里",
+      "expected": "识别为范围过大（查询+生成+通知 ≥3 类能力），不直接拒绝也不盲目开工，而是引导聚焦：『一个 skill 聚焦一件事，你最常用/最痛的是哪个？先做它，其余可后续拆分』，用户选择后再进入正常引导",
+      "assertions": [
+        { "type": "contains", "value": "聚焦" },
+        { "type": "contains", "value": "拆分" }
+      ]
+    },
+    {
+      "id": "g1-qw1-1",
+      "prompt": "生成的 skill 草稿 description 塞了 8 个同义触发词（查日志、查 ES、kibana、检索、看日志、日志查询、es 查询、search），G1 会拦吗？",
+      "expected": "G1 记录 QW1 warning（一分支一触发词：同一分支被多个同义词重命名）不阻塞，计入 .pipeline-log.json；修复由 Agent 参照 skill-creator/references/writing-for-agents.md 合并同义分支（保留真正不同的分支）；QW 检查均为记录不阻塞，作为 Phase 3 修复优先级参考",
+      "assertions": [
+        { "type": "contains", "value": "QW1" },
+        { "type": "contains", "value": "不阻塞" },
+        { "type": "contains", "value": "writing-for-agents" }
+      ]
+    },
+    {
+      "id": "g1-qw3-1",
+      "prompt": "草稿核心步骤写的是「整理数据然后输出结果」，没有说什么时候算做完，门禁管吗？",
+      "expected": "G1 记录 QW3 warning（关键步骤缺可判定完成判据）不阻塞；Phase 1 Step 1.2 生成约束已要求每步结束于可判定的 completion criterion（clarity 防 premature completion、demand 驱动 legwork）；修复由 Agent 参照 writing-for-agents 锐化为可核对且穷尽的条件（如「每个输入都有交代，无静默跳过」）",
+      "assertions": [
+        { "type": "contains", "value": "QW3" },
+        { "type": "contains", "value": "完成判据" }
+      ]
+    },
+    {
+      "id": "intake-recommendation-1",
+      "prompt": "（用户是新人）帮我创建一个 skill，但我完全不懂这些分类，Q1 的选项我一个都不确定选哪个",
+      "expected": "引导式采集遵循「每问附推荐」原则：Q1 各选项按同类 skill 高频分布标注推荐项（⭐），并说明推荐理由；推荐只是推荐，决策是用户的；选 F（不确定）时按既有追问策略从痛点入手，不硬推推荐项",
+      "assertions": [
+        { "type": "contains", "value": "推荐" },
+        { "type": "contains", "value": "⭐" }
+      ]
+    }
+  ]
+}
+

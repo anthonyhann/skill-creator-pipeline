@@ -1,0 +1,35 @@
+id: q8-reuse-verdict
+title: Step 0.0.5 复用快检：疑似已有同类 skill 时停等用户裁决，不直接生成
+description: |
+  验证复用快检协议：用户主动要求先查现成 skill 时，Agent 扫描已安装
+  skill 并按「复用裁决」话术停等用户三选一（试用现有/补强现有/确认新建），
+  不直接生成 SKILL.md，也不跳过裁决直接进 Q1-Q4。
+
+input:
+  prompt: |
+    帮我创建一个 skill，用来根据中文业务描述生成 MySQL 建表 SQL。
+    先帮我看看机器上有没有现成的同类 skill，别急着新建。最终回复请
+    一次性包含扫描结论与你的裁决问卷，不要只给摘要，也不要直接生成
+    SKILL.md。
+
+constraints:
+  timeout_seconds: 600
+  max_turns: 4
+
+judge:
+  type: rule_based
+  success:
+    # ① 复用裁决可见（扫描同类 + 裁决三选项）
+    - output_contains:
+        any: ["复用", "已有", "现成", "同类"]
+    # ② 停等用户三选一，而非直接生成或直接进入 Q1
+    - output_contains:
+        any: ["试用", "补强", "确认新建", "新建"]
+    # ③ 裁决问卷形态可见
+    - output_contains:
+        any: ["请选", "选", "A", "B", "C", "选项"]
+    # ④ 不直接交付 SKILL.md（负向断言用 output_contains.not，
+    #    skill-up rule_based 不支持 not_output_contains，会判 unknown_rule）
+    - output_contains:
+        not: ["## 诚实边界"]
+

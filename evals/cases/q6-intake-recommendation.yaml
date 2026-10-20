@@ -1,0 +1,30 @@
+id: q6-intake-recommendation
+title: 引导式采集「每问附推荐」原则
+description: |
+  验证引导式采集的「每问附推荐」纪律：Q1 各选项按同类 skill 高频分布
+  标注推荐项（⭐）并说明推荐理由；推荐只是推荐，决策是用户的；用户
+  不确定时按追问策略从痛点入手。
+
+input:
+  prompt: |
+    帮我创建一个 skill，但我完全不懂这些分类，Q1 的选项我一个都不确定
+    选哪个。最终回复请一次性给出你要展示给我的完整 Q1 选项与推荐说明，
+    不要只给摘要。
+
+constraints:
+  timeout_seconds: 600
+  max_turns: 4
+
+judge:
+  type: rule_based
+  success:
+    # ① 推荐标注可见
+    - output_contains:
+        any: ["推荐", "⭐"]
+    # ② 选择题选项呈现（A-F 或类型选项）
+    - output_contains:
+        any: ["查数据", "生成内容", "自动化", "选项"]
+    # ③ 不硬推、决策归用户的姿态
+    - output_contains:
+        any: ["不确定", "痛点", "最接近", "你来选", "你选"]
+

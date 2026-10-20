@@ -1,0 +1,57 @@
+# skill-up 评测配置 schema 版本，勿改
+schema_version: v1alpha1
+
+environment:
+  # meta 工具类 skill（skill 创建流水线），评测只验证协议行为问答与护栏，无需沙箱
+  type: none
+
+skills:
+  # 被测 skill 本身
+  - source: local_path
+    path: .
+
+engine:
+  # 用 Claude Code 执行（默认 claude CLI，需先 claude /login 完成 OAuth；
+  # 可用 SKILLUP_CLAUDE_CMD 覆盖通道）。wrapper 防护说明见
+  # scripts/run-claude.sh 头部注释；仅支持单轮用例。
+  name: claude-code-nosid
+  custom:
+    transport: local
+    response_format: text
+    timeout_seconds: 600
+    local:
+      command: bash
+      args:
+        # ⚠️ wrapper 必须在 scripts/（非 evals/scripts/）：skill staging 始终
+        # 排除 evals/ 目录，engine 命令相对路径基于 runtime workspace。
+        - scripts/run-claude.sh
+        - ${input_file}
+
+cases:
+  files:
+    # happy path：不直接生成，进入 Phase 0 引导式采集（Q1-Q4 选择题）
+    - evals/cases/q1-happy-guided-intake.yaml
+    # over-trigger：检查/打分请求路由到 linter / evals
+    - evals/cases/q2-over-trigger-route.yaml
+    # 边界：范围过大（≥3 类能力）引导聚焦而非拒绝或盲目开工
+    - evals/cases/q3-boundary-overscope.yaml
+    # G1 QW1：同义触发词重复记录 warning 不阻塞
+    - evals/cases/q4-g1-qw1-synonym-merge.yaml
+    # G1 QW3：关键步骤缺完成判据记录 warning 不阻塞
+    - evals/cases/q5-g1-qw3-completion-criterion.yaml
+    # 引导式采集「每问附推荐」原则
+    - evals/cases/q6-intake-recommendation.yaml
+    # under-spec：一句话模糊请求用选择题兜底定位类型，不直接生成
+    - evals/cases/q7-under-spec-vague.yaml
+    # 复用快检：疑似已有同类 skill 时停等用户裁决（Step 0.0.5 回归锁）
+    - evals/cases/q8-reuse-verdict.yaml
+  defaults:
+    timeout_seconds: 600
+    max_turns: 4
+    retry_policy:
+      max_retries: 2
+      retry_on: [timeout, error]
+
+report:
+  formats: [json, html]
+

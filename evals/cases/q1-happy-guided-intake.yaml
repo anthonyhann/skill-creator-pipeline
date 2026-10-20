@@ -1,0 +1,32 @@
+id: q1-happy-guided-intake
+title: happy path：不直接生成，进入 Phase 0 引导式采集（Q1-Q4 选择题）
+description: |
+  验证正常创建请求不直接产出 SKILL.md，而是进入 Phase 0 引导流程：
+  准入守卫识别为正常创建（prompt 已声明确认新建，跳过复用快检）→
+  Q1 类型定位选择题 → 后续按序采集 → 回显确认 → 证据采集 → G0 门禁后
+  才进 Phase 1。
+
+input:
+  prompt: |
+    帮我创建一个 skill，用来根据中文业务描述生成符合团队规范的 MySQL
+    建表 SQL。我已确认机器上没有同类 skill，请直接进入你的标准创建
+    流程。最终回复请一次性包含你要引导我完成的完整下一步（问题/
+    选项/说明），不要只给摘要，也不要直接生成 SKILL.md。
+
+constraints:
+  timeout_seconds: 600
+  max_turns: 4
+
+judge:
+  type: rule_based
+  success:
+    # ① 进入引导式采集而非直接生成（选择题可见）
+    - output_contains:
+        any: ["Q1", "选择题", "选项", "选最接近"]
+    # ② 引导话术可见（干什么类型/什么时候用）
+    - output_contains:
+        any: ["干什么", "类型", "什么时候", "何时"]
+    # ③ 停等用户回答
+    - output_contains:
+        any: ["请选", "你的", "回显", "确认"]
+

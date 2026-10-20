@@ -1,0 +1,30 @@
+id: q4-g1-qw1-synonym-merge
+title: G1 QW1：同义触发词重复记录 warning 不阻塞
+description: |
+  验证 G1 门禁对 QW1（一分支一触发词）的处理：description 塞 8 个同义
+  触发词时记录 QW1 warning 不阻塞，计入 .pipeline-log.json；修复参照
+  skill-creator/references/writing-for-agents.md 合并同义分支。
+
+input:
+  prompt: |
+    生成的 skill 草稿 description 塞了 8 个同义触发词（查日志、查 ES、
+    kibana、检索、看日志、日志查询、es 查询、search），G1 会拦吗？
+    最终回复请一次性给出完整判定与处理建议，不要只给摘要。
+
+constraints:
+  timeout_seconds: 600
+  max_turns: 4
+
+judge:
+  type: rule_based
+  success:
+    # ① QW1 / 一分支一触发词判定可见
+    - output_contains:
+        any: ["QW1", "一分支一触发词", "同义"]
+    # ② 记录不阻塞的处置可见
+    - output_contains:
+        any: ["不阻塞", "记录", "warning", "Warning"]
+    # ③ 修复指向 writing-for-agents
+    - output_contains:
+        any: ["writing-for-agents", "合并同义", "合并"]
+

@@ -1,0 +1,28 @@
+id: q7-under-spec-vague
+title: under-spec：一句话模糊请求用选择题兜底定位类型，不直接生成
+description: |
+  验证 under-spec 防护：用户全程只说一句模糊的话时，用 Step 0.1 选择题
+  兜底定位类型，最差情况也能定位到 A-F 类型，不直接生成 SKILL.md。
+
+input:
+  prompt: |
+    帮我做个自动化。最终回复请一次性包含你要引导我回答的完整问题与选项，
+    不要只给摘要，也不要直接生成 SKILL.md。
+
+constraints:
+  timeout_seconds: 600
+  max_turns: 4
+
+judge:
+  type: rule_based
+  success:
+    # ① 选择题兜底可见
+    - output_contains:
+        any: ["Q1", "选项", "选择题", "选最接近"]
+    # ② 追问定位（从痛点/重复劳动入手）
+    - output_contains:
+        any: ["自动化", "类型", "哪个", "痛点", "重复"]
+    # ③ 停等用户回答而非直接产出
+    - output_contains:
+        any: ["请选", "你的", "告诉我", "确认"]
+

@@ -1,0 +1,40 @@
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Node
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.venv/
+venv/
+
+# Editors / IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Env & secrets
+.env
+.env.local
+*.local
+
+# Logs & temp
+*.log
+tmp/
+temp/
+
+# Eval / pipeline runtime artifacts
+.pipeline-log.json
+evals/reports/
+evals/.results/

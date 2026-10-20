@@ -1,0 +1,26 @@
+id: q2-over-trigger-route
+title: over-trigger：检查/打分请求路由到 skill linter / skill-eval-optimizer
+description: |
+  验证 NOT 边界：检查现有 skill 与打分评估不属于创建流水线触发范围，
+  按 Step 0.0 准入判断路由到 skill linter / skill-eval-optimizer，
+  不进入创建引导。
+
+input:
+  prompt: |
+    帮我检查一下 es-query 这个 skill 写得有没有问题，顺便打个分。
+    最终回复请一次性给出完整结论，不要只给摘要。
+
+constraints:
+  timeout_seconds: 600
+  max_turns: 4
+
+judge:
+  type: rule_based
+  success:
+    # ① 路由到 linter / evals（success-only 锚点，取交付物实体）
+    - output_contains:
+        any: ["skill-eval-optimizer", "skill linter", "linter", "eval-optimizer"]
+    # ② 不进入创建流程的拒绝措辞
+    - output_contains:
+        any: ["不属于", "不进入", "建议使用", "更适合", "仅负责创建", "负责创建"]
+

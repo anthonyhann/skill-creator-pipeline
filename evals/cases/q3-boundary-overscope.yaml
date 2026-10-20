@@ -1,0 +1,29 @@
+id: q3-boundary-overscope
+title: 边界：范围过大（≥3 类能力）引导聚焦而非拒绝或盲目开工
+description: |
+  验证超范围请求的处理：一句话包含查询+生成+通知 ≥3 类能力时，
+  不直接拒绝也不盲目开工，而是引导聚焦（一个 skill 一件事，
+  让用户选择最常用/最痛的一个先做）。
+
+input:
+  prompt: |
+    我想做一个 skill：能查 ES 日志、把结果生成周报、还要自动发到 IM 群里。
+    最终回复请一次性给出你的完整处理与引导建议，不要只给摘要。
+
+constraints:
+  timeout_seconds: 600
+  max_turns: 4
+
+judge:
+  type: rule_based
+  success:
+    # ① 引导聚焦话术
+    - output_contains:
+        any: ["聚焦", "拆分", "一个 skill", "先做"]
+    # ② 让用户选择优先项
+    - output_contains:
+        any: ["最常用", "最痛", "哪个", "选择"]
+    # ③ 识别为范围过大
+    - output_contains:
+        any: ["范围过大", "过大", "多类", "多件事", "≥3", "3 类"]
+

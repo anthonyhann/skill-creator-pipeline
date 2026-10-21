@@ -128,15 +128,19 @@ SKILLS_ROOT=<仓库的上级目录> \
 
 [evals/cases/](evals/cases/) 里的 8 个评测用例锁定了最关键的协议行为：引导优于生成、over-trigger 拒绝路由、under-spec 选择题兜底、范围过大引导聚焦、复用裁决、写作质量 warning。可用任意 skill-up 兼容的 runner 跑 `evals/eval.yaml` 复现。
 
+它也被自己的姊妹项目打过分：[skill-eval-optimizer](https://github.com/anthonyhann/skill-eval-optimizer) 跟踪了本流水线 **5 轮优化：76.3 → 86.3（/100）**——来自一个 **49 个生产级 agent skills、342 条评分记录**（2026-04 至 2026-10）的真实环境。
+
 ## 🧩 配套 Skill
 
 流水线编排三种能力，均为可插拔、可降级：
 
 | 能力 | 期望来源 | 缺失时 |
 |---|---|---|
-| 生成模板与写作规则 | 一个 `skill-creator` skill（`~/.claude/skills/skill-creator/`） | —（Phase 1 必需） |
+| 生成模板与写作规则 | [skill-creator](https://github.com/anthonyhann/skill-creator)——生成引擎（`npx skills add anthonyhann/skill-creator`） | —（Phase 1 必需） |
 | 结构 lint | 任意 linter 脚本，路径经 `SKILL_LINTER_SCRIPT` 配置 | 内置最小规则集接管（`lint_mode: degraded`） |
-| 8 维评分 | `skill-eval-optimizer` | 内置简化评分（`eval_mode: degraded`） |
+| 8 维评分 | [skill-eval-optimizer](https://github.com/anthonyhann/skill-eval-optimizer)（`npx skills add anthonyhann/skill-eval-optimizer`） | 内置简化评分（`eval_mode: degraded`） |
+
+> **两者的关系：** [skill-creator](https://github.com/anthonyhann/skill-creator) 是*引擎*（模式库、模板、写作规则、验证器）；本流水线是*装配线*（引导问答 → 质量门禁 → 评测闭环），负责驱动引擎。手动精修用 skill-creator，全程引导带门禁用本流水线。
 
 环境变量：`SKILLS_ROOT`（skill 安装根目录，默认 `~/.claude/skills`）、`SKILL_LINTER_SCRIPT`、`SKILL_INTERNAL_DOMAIN_PATTERN`（你组织的内网域名正则，用于泄露检查）。
 

@@ -129,15 +129,19 @@ SKILLS_ROOT=<parent-dir-of-the-repo> \
 
 The 8 eval cases in [evals/cases/](evals/cases/) lock the protocol behaviors that matter: guided intake over blind generation, over-trigger refusal, under-spec fallback, over-scope focusing, reuse verdict, and the writing-quality warnings. Run them with any skill-up-compatible runner against `evals/eval.yaml`.
 
+It has also been scored by its own sibling: [skill-eval-optimizer](https://github.com/anthonyhann/skill-eval-optimizer) tracked this pipeline over **5 optimization rounds, 76.3 → 86.3 / 100** — inside a production fleet of **49 agent skills** with **342 scored records** (2026-04 → 2026-10).
+
 ## 🧩 Companion Skills
 
 The pipeline orchestrates three capabilities. Each is pluggable and degrades gracefully:
 
 | Capability | Expected from | If missing |
 |---|---|---|
-| Generation templates & writing rules | a `skill-creator` skill (`~/.claude/skills/skill-creator/`) | — (required for Phase 1) |
+| Generation templates & writing rules | [skill-creator](https://github.com/anthonyhann/skill-creator) — the generation engine (`npx skills add anthonyhann/skill-creator`) | — (required for Phase 1) |
 | Structural lint | any linter script, path via `SKILL_LINTER_SCRIPT` | Built-in minimal checks take over (`lint_mode: degraded`) |
-| 8-dimension scoring | `skill-eval-optimizer` | Built-in simplified scoring (`eval_mode: degraded`) |
+| 8-dimension scoring | [skill-eval-optimizer](https://github.com/anthonyhann/skill-eval-optimizer) (`npx skills add anthonyhann/skill-eval-optimizer`) | Built-in simplified scoring (`eval_mode: degraded`) |
+
+> **How they relate:** [skill-creator](https://github.com/anthonyhann/skill-creator) is the *engine* (patterns, templates, writing rules, validators); this pipeline is the *assembly line* (intake → gates → eval loop) that drives it. Use skill-creator alone for hands-on generation, or this pipeline for the full guided, gated flow.
 
 Environment knobs: `SKILLS_ROOT` (skill install root, default `~/.claude/skills`), `SKILL_LINTER_SCRIPT`, `SKILL_INTERNAL_DOMAIN_PATTERN` (your org's internal-domain regex for the leak check).
 
